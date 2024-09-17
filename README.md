@@ -49,13 +49,19 @@ pip install google-generativeai pyttsx3 speech_recognition python-dotenv
      GENAI_API_KEY=your_api_key_here
      ```
 
-3. Run the Application:
+3. Install Packages:
+   Install all the app dependencies with the following command:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run the Application:
    Start the chatbot by running the following command:
    ```bash
    python app.py
    ```
 
-4. Usage:
+5. Usage:
    - Type your questions or prompts directly.
    - Use the command `clear` to clear the conversation history.
    - Type `exit` to quit the chatbot.
