@@ -1,3 +1,5 @@
+# this is to test from terminal
+
 import sys
 from chatbot import ChatBot
 import pyttsx3

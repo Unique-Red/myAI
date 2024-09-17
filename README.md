@@ -57,9 +57,16 @@ pip install google-generativeai pyttsx3 speech_recognition python-dotenv
 
 4. Run the Application:
    Start the chatbot by running the following command:
+   - Terminal
    ```bash
    python app.py
    ```
+
+   - With User Interface
+   ```bash
+   python flask_app.py
+   ```
+   
 
 5. Usage:
    - Type your questions or prompts directly.

@@ -39,7 +39,7 @@ class ChatBot:
                 generation_config=self._generation_config(temperature),
             )
             response.resolve()
-            return f"{response.text}\n" + "---" * 10
+            return f"{response.text}\n" # + "---" * 10
         except Exception as e:
             raise GenAIException(f"An error occurred: {e}")
         

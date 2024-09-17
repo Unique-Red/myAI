@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyAI Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>MyAI Chatbot</h1>
+        <div id="chatbox">
+            <div id="messages"></div>
+        </div>
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+            <button type="submit">Send</button>
+            <button id="speak-btn" type="button">🎤 Speak</button>
+        </form>
+        <div class="speech-controls">
+            <button id="play-btn" type="button">▶️ Play</button>
+            <button id="pause-btn" type="button">⏸️ Pause</button>
+            <button id="stop-btn" type="button">⏹️ Stop</button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("chat-form");
+        const input = document.getElementById("user-input");
+        const messages = document.getElementById("messages");
+        const speakBtn = document.getElementById("speak-btn");
+        const playBtn = document.getElementById("play-btn");
+        const pauseBtn = document.getElementById("pause-btn");
+        const stopBtn = document.getElementById("stop-btn");
+        let lastBotMessage = "";
+        let speechInstance = null;
+
+        // Submit form with text
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const userInput = input.value;
+            if (!userInput) return;
+
+            appendMessage("You", userInput);
+            fetchResponse(userInput);
+            input.value = "";
+        });
+
+        // Speech-to-text: recognize speech
+        speakBtn.addEventListener("click", function() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                appendMessage("You", transcript);
+                fetchResponse(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                appendMessage("Error", "Speech recognition error: " + event.error);
+            };
+        });
+
+        // Text-to-speech: initialize and speak bot response
+        function speakBotMessage(text) {
+            speechInstance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(speechInstance);
+        }
+
+        // Play button: resumes the bot's speech if paused
+        playBtn.addEventListener("click", function() {
+            if (speechSynthesis.paused && speechInstance) {
+                speechSynthesis.resume();
+            } else if (!speechInstance && lastBotMessage) {
+                speakBotMessage(lastBotMessage);
+            }
+        });
+
+        // Pause button: pauses the bot's speech
+        pauseBtn.addEventListener("click", function() {
+            if (speechSynthesis.speaking && !speechSynthesis.paused) {
+                speechSynthesis.pause();
+            }
+        });
+
+        // Stop button: stops the bot's speech
+        stopBtn.addEventListener("click", function() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                speechInstance = null;  // Reset the speech instance
+            }
+        });
+
+        // Append messages to chat
+        function appendMessage(sender, text) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Fetch the bot response from Flask
+        function fetchResponse(userInput) {
+            fetch("/send_prompt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ prompt: userInput }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    appendMessage("Error", data.error);
+                } else {
+                    lastBotMessage = data.response;
+                    appendMessage("MyAI", lastBotMessage);
+
+                    // Bot speaks the response
+                    speakBotMessage(lastBotMessage);
+                }
+            })
+            .catch(error => {
+                appendMessage("Error", "An error occurred: " + error);
+            });
+        }
+    </script>
+</body>
+</html>
